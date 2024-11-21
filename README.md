@@ -2,6 +2,12 @@
 
 This is a simple URL shortener web application built with **Flask** and **Flask-RESTful**. It uses a **JSON file** for data storage to store the mappings between long URLs and their corresponding short URLs. The application also provides a basic frontend with a dark theme using **HTML**, **CSS**, **Bootstrap**, and **Tailwind CSS**.
 
+## Screenshot
+
+Here is a screenshot of the application in action:
+
+![URL Shortener Screenshot](static/ss.png)
+
 ## Features
 
 - Shorten URLs and get a unique short URL.
@@ -52,5 +58,4 @@ This is a simple URL shortener web application built with **Flask** and **Flask-
     ```
 
 5. Open your browser and visit `http://localhost:5000` to start using the URL shortener.
-
 
