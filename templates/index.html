@@ -45,6 +45,10 @@
                     <label for="long-url" class="block text-sm font-medium mb-1 text-purple-200">Enter URL to shorten:</label>
                     <input type="url" id="long-url" required class="w-full px-3 py-2 bg-gray-800 border border-purple-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
                 </div>
+                <div>
+                    <label for="custom-keyword" class="block text-sm font-medium mb-1 text-purple-200">Custom Keyword (optional):</label>
+                    <input type="text" id="custom-keyword" class="w-full px-3 py-2 bg-gray-800 border border-purple-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                </div>
                 <div class="flex space-x-4">
                     <button type="submit" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
                         Shorten URL
@@ -64,6 +68,7 @@
     <script>
         const form = document.getElementById('url-form');
         const longUrlInput = document.getElementById('long-url');
+        const customKeywordInput = document.getElementById('custom-keyword');
         const resetBtn = document.getElementById('reset-btn');
         const resultDiv = document.getElementById('result');
         const shortUrlLink = document.getElementById('short-url');
@@ -71,6 +76,7 @@
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const longUrl = longUrlInput.value;
+            const customKeyword = customKeywordInput.value.trim() || null;  // Use custom keyword if provided
             
             try {
                 const response = await fetch('/shorten', {
@@ -78,7 +84,7 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ url: longUrl }),
+                    body: JSON.stringify({ url: longUrl, custom_keyword: customKeyword }),
                 });
 
                 if (response.ok) {
@@ -106,4 +112,3 @@
     </script>
 </body>
 </html>
-

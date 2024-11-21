@@ -50,13 +50,19 @@ def generate_short_url():
 class URLShortener(Resource):
     def post(self):
         long_url = request.json['url']
+        custom_keyword = request.json.get('custom_keyword')  # Get custom keyword if provided
         
-        # Check if the URL has already been shortened
-        if long_url in reverse_lookup:
-            return {'short_url': reverse_lookup[long_url]}, 200
-        
-        # If not, create a new short URL
-        short_url = generate_short_url()
+        # If custom keyword is provided, ensure it's unique
+        if custom_keyword:
+            if custom_keyword in url_database:
+                return {'error': 'Custom keyword already taken'}, 400
+            short_url = custom_keyword
+        else:
+            # Check if the URL has already been shortened
+            if long_url in reverse_lookup:
+                return {'short_url': reverse_lookup[long_url]}, 200
+            short_url = generate_short_url()
+
         url_database[short_url] = long_url
         reverse_lookup[long_url] = short_url
         
