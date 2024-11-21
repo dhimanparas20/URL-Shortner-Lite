@@ -8,23 +8,38 @@ import json
 app = Flask(__name__)
 api = Api(app)
 
+# Flag to decide whether to use external JSON file or in-memory database
+USE_EXTERNAL_JSON_FILE = False  # Set this to False to use in-memory database
+
 # File-based database
 DB_FILE = 'url_database.json'
 
+# In-memory database if USE_EXTERNAL_JSON_FILE is False
+url_database = {}
+reverse_lookup = {}
+
 def load_database():
-    if os.path.exists(DB_FILE):
+    if USE_EXTERNAL_JSON_FILE and os.path.exists(DB_FILE):
+        # Load from the JSON file if using an external database
         with open(DB_FILE, 'r') as f:
             data = json.load(f)
         return data.get('url_database', {}), data.get('reverse_lookup', {})
-    return {}, {}
+    # Return the in-memory database if USE_EXTERNAL_JSON_FILE is False
+    return url_database, reverse_lookup
 
 def save_database(url_database, reverse_lookup):
-    with open(DB_FILE, 'w') as f:
-        json.dump({
-            'url_database': url_database,
-            'reverse_lookup': reverse_lookup
-        }, f)
+    if USE_EXTERNAL_JSON_FILE:
+        # Save to the JSON file if using an external database
+        with open(DB_FILE, 'w') as f:
+            json.dump({
+                'url_database': url_database,
+                'reverse_lookup': reverse_lookup
+            }, f)
+    else:
+        # No action required for in-memory storage
+        pass
 
+# Load the database (either from file or memory)
 url_database, reverse_lookup = load_database()
 
 def generate_short_url():
@@ -66,4 +81,3 @@ def index():
 
 if __name__ == '__main__':
     app.run(debug=False, port=5000, threaded=True, host="0.0.0.0")
-
