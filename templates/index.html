@@ -6,65 +6,102 @@
     <title>MST URL Shortener</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="static/link.png">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        purple: {
-                            50: '#f5f3ff',
-                            100: '#ede9fe',
-                            200: '#ddd6fe',
-                            300: '#c4b5fd',
-                            400: '#a78bfa',
-                            500: '#8b5cf6',
-                            600: '#7c3aed',
-                            700: '#6d28d9',
-                            800: '#5b21b6',
-                            900: '#4c1d95',
-                        },
-                    },
-                },
-            },
-        }
-    </script>
     <style>
         body {
-            background-color: #000000;
+            background: #000;
             color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .mst-card {
+            background: #18181b;
+            border-radius: 1rem;
+            box-shadow: 0 4px 32px 0 rgba(80, 0, 120, 0.15);
+            padding: 2rem 2rem 1.5rem 2rem;
+            max-width: 420px;
+            margin: auto;
+        }
+        .mst-title {
+            color: #a78bfa;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .form-label {
+            color: #c4b5fd;
+        }
+        .form-control {
+            background: #232136;
+            border: 1px solid #8b5cf6;
+            color: #fff;
+        }
+        .form-control:focus {
+            border-color: #a78bfa;
+            box-shadow: 0 0 0 0.2rem rgba(139, 92, 246, 0.25);
+            background: #232136;
+            color: #fff;
+        }
+        .btn-purple {
+            background: linear-gradient(90deg, #8b5cf6 0%, #6d28d9 100%);
+            color: #fff;
+            font-weight: 600;
+            border: none;
+            transition: background 0.2s;
+        }
+        .btn-purple:hover, .btn-purple:focus {
+            background: linear-gradient(90deg, #7c3aed 0%, #5b21b6 100%);
+            color: #fff;
+        }
+        .btn-gray {
+            background: #374151;
+            color: #fff;
+            font-weight: 600;
+            border: none;
+        }
+        .btn-gray:hover, .btn-gray:focus {
+            background: #4b5563;
+            color: #fff;
+        }
+        .short-url-label {
+            color: #c4b5fd;
+        }
+        .short-url-link {
+            color: #a78bfa;
+            word-break: break-all;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .short-url-link:hover {
+            color: #ede9fe;
+            text-decoration: underline;
         }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center">
-    <div class="container mx-auto px-4">
-        <div class="max-w-md mx-auto bg-gray-900 rounded-lg shadow-lg p-6">
-            <h1 class="text-3xl font-bold mb-6 text-center text-purple-400">MST URL Shortener</h1>
-            <form id="url-form" class="space-y-4">
-                <div>
-                    <label for="long-url" class="block text-sm font-medium mb-1 text-purple-200">Enter URL to shorten:</label>
-                    <input type="url" id="long-url" required class="w-full px-3 py-2 bg-gray-800 border border-purple-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+<body>
+    <div class="container">
+        <div class="mst-card shadow-lg">
+            <h1 class="text-center mb-4 mst-title display-6">MST URL Shortener</h1>
+            <form id="url-form" autocomplete="off">
+                <div class="mb-3">
+                    <label for="long-url" class="form-label">Enter URL to shorten:</label>
+                    <input type="url" id="long-url" class="form-control" required placeholder="https://example.com">
                 </div>
-                <div>
-                    <label for="custom-keyword" class="block text-sm font-medium mb-1 text-purple-200">Custom Keyword (optional):</label>
-                    <input type="text" id="custom-keyword" class="w-full px-3 py-2 bg-gray-800 border border-purple-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <div class="mb-4">
+                    <label for="custom-keyword" class="form-label">Custom Keyword (optional):</label>
+                    <input type="text" id="custom-keyword" class="form-control" placeholder="e.g. my-link">
                 </div>
-                <div class="flex space-x-4">
-                    <button type="submit" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
-                        Shorten URL
-                    </button>
-                    <button type="reset" id="reset-btn" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
-                        Reset
-                    </button>
+                <div class="d-flex gap-3">
+                    <button type="submit" class="btn btn-purple flex-fill">Shorten URL</button>
+                    <button type="reset" id="reset-btn" class="btn btn-gray flex-fill">Reset</button>
                 </div>
             </form>
-            <div id="result" class="mt-6 text-center hidden">
-                <p class="text-lg font-semibold mb-2 text-purple-300">Shortened URL:</p>
-                <a id="short-url" href="#" target="_blank" class="text-purple-400 hover:text-purple-300 break-all"></a>
+            <div id="result" class="mt-5 text-center d-none">
+                <p class="short-url-label fw-semibold mb-2">Shortened URL:</p>
+                <a id="short-url" href="#" target="_blank" class="short-url-link fs-5"></a>
             </div>
         </div>
     </div>
-
     <script>
         const form = document.getElementById('url-form');
         const longUrlInput = document.getElementById('long-url');
@@ -76,23 +113,19 @@
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const longUrl = longUrlInput.value;
-            const customKeyword = customKeywordInput.value.trim() || null;  // Use custom keyword if provided
-            
+            const customKeyword = customKeywordInput.value.trim() || null;
             try {
                 const response = await fetch('/shorten', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ url: longUrl, custom_keyword: customKeyword }),
                 });
-
                 if (response.ok) {
                     const data = await response.json();
                     const shortUrl = `${window.location.origin}/${data.short_url}`;
                     shortUrlLink.href = shortUrl;
                     shortUrlLink.textContent = shortUrl;
-                    resultDiv.classList.remove('hidden');
+                    resultDiv.classList.remove('d-none');
                 } else {
                     alert('Error shortening URL');
                 }
@@ -105,7 +138,7 @@
         resetBtn.addEventListener('click', (e) => {
             e.preventDefault();
             form.reset();
-            resultDiv.classList.add('hidden');
+            resultDiv.classList.add('d-none');
             shortUrlLink.href = '#';
             shortUrlLink.textContent = '';
         });
