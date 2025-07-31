@@ -76,12 +76,23 @@
             color: #ede9fe;
             text-decoration: underline;
         }
+        .qr-img {
+            margin-top: 1rem;
+            background: #fff;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+        }
+        .stat-label {
+            color: #c4b5fd;
+            font-size: 0.95rem;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="mst-card shadow-lg">
             <h1 class="text-center mb-4 mst-title display-6">MST URL Shortener</h1>
+            <!-- Shorten URL Form -->
             <form id="url-form" autocomplete="off">
                 <div class="mb-3">
                     <label for="long-url" class="form-label">Enter URL to shorten:</label>
@@ -96,19 +107,54 @@
                     <button type="reset" id="reset-btn" class="btn btn-gray flex-fill">Reset</button>
                 </div>
             </form>
+            <!-- Shorten Result -->
             <div id="result" class="mt-5 text-center d-none">
                 <p class="short-url-label fw-semibold mb-2">Shortened URL:</p>
                 <a id="short-url" href="#" target="_blank" class="short-url-link fs-5"></a>
+                <div class="mt-3">
+                    <span class="stat-label">Clicks: <span id="click-count">0</span></span>
+                </div>
+                <div id="qr-section" class="mt-3">
+                    <img id="qr-img" class="qr-img" src="" alt="QR Code" width="120" height="120" />
+                    <div>
+                        <a id="download-qr" href="#" download="qr.png" class="btn btn-sm btn-purple mt-2">Download QR</a>
+                    </div>
+                </div>
+            </div>
+            <!-- Reverse Lookup -->
+            <hr class="my-4" />
+            <div>
+                <h5 class="text-center mb-3">Unshorten a URL</h5>
+                <form id="unshorten-form" autocomplete="off">
+                    <div class="mb-3">
+                        <label for="short-keyword" class="form-label">Enter Short Keyword:</label>
+                        <input type="text" id="short-keyword" class="form-control" required placeholder="e.g. my-link">
+                    </div>
+                    <button type="submit" class="btn btn-purple w-100">Get Original URL</button>
+                </form>
+                <div id="unshorten-result" class="mt-3 text-center d-none">
+                    <p class="short-url-label fw-semibold mb-2">Original URL:</p>
+                    <a id="original-url" href="#" target="_blank" class="short-url-link fs-6"></a>
+                    <div class="mt-2">
+                        <span class="stat-label">Clicks: <span id="unshorten-click-count">0</span></span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     <script>
+        // Shorten URL logic
         const form = document.getElementById('url-form');
         const longUrlInput = document.getElementById('long-url');
         const customKeywordInput = document.getElementById('custom-keyword');
         const resetBtn = document.getElementById('reset-btn');
         const resultDiv = document.getElementById('result');
         const shortUrlLink = document.getElementById('short-url');
+        const clickCount = document.getElementById('click-count');
+        const qrImg = document.getElementById('qr-img');
+        const downloadQr = document.getElementById('download-qr');
+        const unshortenClickCount = document.getElementById('unshorten-click-count');
+
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -126,8 +172,17 @@
                     shortUrlLink.href = shortUrl;
                     shortUrlLink.textContent = shortUrl;
                     resultDiv.classList.remove('d-none');
+                    // Fetch click stats
+                    fetch(`/stats/${data.short_url}`)
+                        .then(res => res.json())
+                        .then(stat => clickCount.textContent = stat.clicks || 0);
+                    // Show QR code
+                    const qrUrl = `/qr/${data.short_url}`;
+                    qrImg.src = qrUrl;
+                    downloadQr.href = qrUrl;
                 } else {
-                    alert('Error shortening URL');
+                    const err = await response.json();
+                    alert(err.error || 'Error shortening URL');
                 }
             } catch (error) {
                 console.error('Error:', error);
@@ -141,6 +196,42 @@
             resultDiv.classList.add('d-none');
             shortUrlLink.href = '#';
             shortUrlLink.textContent = '';
+            clickCount.textContent = '0';
+            qrImg.src = '';
+            downloadQr.href = '#';
+        });
+
+        // Reverse Lookup logic
+        const unshortenForm = document.getElementById('unshorten-form');
+        const shortKeywordInput = document.getElementById('short-keyword');
+        const unshortenResultDiv = document.getElementById('unshorten-result');
+        const originalUrlLink = document.getElementById('original-url');
+
+        unshortenForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const keyword = shortKeywordInput.value.trim();
+            if (!keyword) return;
+            try {
+                const response = await fetch('/unshorten', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ keyword }),
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    originalUrlLink.href = data.long_url;
+                    originalUrlLink.textContent = data.long_url;
+                    unshortenClickCount.textContent = data.clicks || 0;
+                    unshortenResultDiv.classList.remove('d-none');
+                } else {
+                    const err = await response.json();
+                    alert(err.error || 'Short URL not found');
+                    unshortenResultDiv.classList.add('d-none');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error looking up URL');
+            }
         });
     </script>
 </body>
