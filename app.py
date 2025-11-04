@@ -17,6 +17,7 @@ load_dotenv()
 app = Flask(__name__)
 api = Api(app)
 
+# USE_JSON_FILE simply means to use a local json file to store the database
 USE_JSON_FILE = os.getenv('USE_JSON_FILE', 'false').lower() == 'true'
 DB_FILE = 'url_database.json'
 
@@ -112,6 +113,9 @@ class ReverseLookup(Resource):
         keyword = request.json.get('keyword')
         if not keyword:
             return {'error': 'No keyword provided'}, 400
+            # if theere is http in keyword then extract it
+        if ['http','https'] in keyword:
+            keyword = keyword.split('/')[-1]
         if USE_JSON_FILE:
             long_url = url_database.get(keyword)
             count = clicks.get(keyword, 0)
