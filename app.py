@@ -8,6 +8,8 @@ from pymongo import MongoClient
 from dotenv import load_dotenv
 import io
 import qrcode
+from datetime import datetime, timezone
+
 
 # Load environment variables
 load_dotenv()
@@ -49,11 +51,19 @@ class URLShortener(Resource):
     def post(self):
         long_url = request.json['url']
         custom_keyword = request.json.get('custom_keyword')
+        user_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
         if USE_JSON_FILE:
             if custom_keyword:
                 if custom_keyword in url_database:
                     return {'error': 'Custom keyword already taken'}, 400
                 short_url = custom_keyword
+                url_collection.insert_one({
+                    'short_url': short_url,
+                    'long_url': long_url,
+                    'clicks': 0,
+                    'created_at': datetime.now(timezone.utc),
+                    'ip_address': user_ip
+                })
             else:
                 if long_url in reverse_lookup:
                     return {'short_url': reverse_lookup[long_url]}, 200
@@ -75,7 +85,9 @@ class URLShortener(Resource):
             url_collection.insert_one({
                 'short_url': short_url,
                 'long_url': long_url,
-                'clicks': 0
+                'clicks': 0,
+                'created_at': datetime.now(timezone.utc),
+                'ip_address': user_ip
             })
         return {'short_url': short_url}, 201
 

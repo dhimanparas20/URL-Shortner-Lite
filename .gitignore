@@ -3,3 +3,4 @@ venv
 .venv
 .idea
 .vscode
+monog-compose.yml
