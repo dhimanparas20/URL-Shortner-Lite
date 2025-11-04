@@ -113,9 +113,11 @@ class ReverseLookup(Resource):
         keyword = request.json.get('keyword')
         if not keyword:
             return {'error': 'No keyword provided'}, 400
-            # if theere is http in keyword then extract it
-        if ['http','https'] in keyword:
-            keyword = keyword.split('/')[-1]
+        if 'http' in keyword or 'https' in keyword:
+            if keyword.endswith('/'):
+                keyword = keyword.split('/')[-2]
+            else:
+                keyword = keyword.split('/')[-1]
         if USE_JSON_FILE:
             long_url = url_database.get(keyword)
             count = clicks.get(keyword, 0)
