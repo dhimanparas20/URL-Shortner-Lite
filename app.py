@@ -1,21 +1,23 @@
+import io
+import json
+import os
+import random
+import string
+from datetime import datetime, timezone
+from datetime import timedelta
+
+import qrcode
+from apscheduler.schedulers.background import BackgroundScheduler
+from dotenv import load_dotenv
 from flask import Flask, request, redirect, render_template, jsonify, send_file
 from flask_restful import Api, Resource
-import string
-import random
-import os
-import json
 from pymongo import MongoClient
-from dotenv import load_dotenv
-import io
-import qrcode
-from datetime import datetime, timezone
-
 
 # Load environment variables
 load_dotenv()
-
 app = Flask(__name__)
 api = Api(app)
+scheduler = BackgroundScheduler()
 
 # USE_JSON_FILE simply means to use a local json file to store the database
 USE_JSON_FILE = os.getenv('USE_JSON_FILE', 'false').lower() == 'true'
@@ -167,5 +169,14 @@ api.add_resource(QRCodeGen, '/qr/<string:short_url>')
 def index():
     return render_template('index.html')
 
+# Delete the short urls if they have less than 1 click and older than 7 days
+def delete_urls():
+    print(f"Running delete_urls at {datetime.now()}")
+    print(url_collection.delete_many({'clicks': {'$lt': 1}, 'created_at': {'$lt': datetime.now(timezone.utc) - timedelta(days=7)}}))
+
+# Set the sceduler to run after every 7 days
+scheduler.add_job(delete_urls, 'interval', days=7)
+
 if __name__ == '__main__':
+    scheduler.start()
     app.run(debug=False, port=5000, threaded=True, host="0.0.0.0")
