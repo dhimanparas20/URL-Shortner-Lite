@@ -48,6 +48,12 @@ def generate_short_url():
     characters = string.ascii_letters + string.digits
     return ''.join(random.choice(characters) for _ in range(6))
 
+# A function that uses regex trim down the keyword so that all unwanted characters are replaced with an underscore
+import re
+def trim_keyword(keyword):
+    return re.sub(r'[^a-zA-Z0-9]', '_', keyword)
+
+
 class URLShortener(Resource):
     def post(self):
         long_url = request.json['url']
@@ -57,7 +63,7 @@ class URLShortener(Resource):
             if custom_keyword:
                 if custom_keyword in url_database:
                     return {'error': 'Custom keyword already taken'}, 400
-                short_url = custom_keyword
+                short_url = trim_keyword(custom_keyword)
                 url_collection.insert_one({
                     'short_url': short_url,
                     'long_url': long_url,
@@ -75,9 +81,13 @@ class URLShortener(Resource):
             save_database(url_database, reverse_lookup, clicks)
         else:
             if custom_keyword:
+                if len(custom_keyword) < 3:
+                    return {'error': 'Custom keyword must be at least 3 characters long'}, 400
+                elif len(custom_keyword) > 30:
+                    return {'error': 'Custom keyword must be at most 30 characters long'}, 400
                 if url_collection.find_one({'short_url': custom_keyword}):
                     return {'error': 'Custom keyword already taken'}, 400
-                short_url = custom_keyword
+                short_url = trim_keyword(custom_keyword)
             else:
                 existing_url = url_collection.find_one({'long_url': long_url})
                 if existing_url:

@@ -1,2 +1,2 @@
-MONGO_URI=
+MONGO_URI=mongodb://localhost:27017/url_shortner
 USE_JSON_FILE=false
