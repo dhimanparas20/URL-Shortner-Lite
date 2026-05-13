@@ -98,9 +98,28 @@
                     <label for="long-url" class="form-label">Enter URL to shorten:</label>
                     <input type="url" id="long-url" class="form-control" required placeholder="https://example.com">
                 </div>
-                <div class="mb-4">
+                 <div class="mb-3">
                     <label for="custom-keyword" class="form-label">Custom Keyword (optional):</label>
                     <input type="text" id="custom-keyword" class="form-control" placeholder="e.g. my-link">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Auto-Delete After (optional):</label>
+                    <div class="d-flex gap-2">
+                        <input type="number" id="expiry-value" class="form-control" placeholder="e.g. 1" min="1" style="width:40%">
+                        <select id="expiry-unit" class="form-control" style="width:60%;background:#232136;border:1px solid #8b5cf6;color:#fff;">
+                            <option value="">Never</option>
+                            <option value="seconds">Seconds</option>
+                            <option value="minutes">Minutes</option>
+                            <option value="hours">Hours</option>
+                            <option value="days">Days</option>
+                            <option value="weeks">Weeks</option>
+                            <option value="months">Months</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label for="max-views" class="form-label">Max Views (optional):</label>
+                    <input type="number" id="max-views" class="form-control" placeholder="e.g. 1 for one-time view" min="1">
                 </div>
                 <div class="d-flex gap-3">
                     <button type="submit" class="btn btn-purple flex-fill">Shorten URL</button>
@@ -156,15 +175,28 @@
         const unshortenClickCount = document.getElementById('unshorten-click-count');
 
 
+        const expiryValueInput = document.getElementById('expiry-value');
+        const expiryUnitInput = document.getElementById('expiry-unit');
+        const maxViewsInput = document.getElementById('max-views');
+
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const longUrl = longUrlInput.value;
             const customKeyword = customKeywordInput.value.trim() || null;
+            const expiryValue = expiryValueInput.value || null;
+            const expiryUnit = expiryUnitInput.value || null;
+            const maxViews = maxViewsInput.value || null;
             try {
                 const response = await fetch('/shorten', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: longUrl, custom_keyword: customKeyword }),
+                    body: JSON.stringify({
+                        url: longUrl,
+                        custom_keyword: customKeyword,
+                        expiry_value: expiryValue,
+                        expiry_unit: expiryUnit,
+                        max_views: maxViews,
+                    }),
                 });
                 if (response.ok) {
                     const data = await response.json();
@@ -199,6 +231,7 @@
             clickCount.textContent = '0';
             qrImg.src = '';
             downloadQr.href = '#';
+            expiryUnitInput.value = '';
         });
 
         // Reverse Lookup logic
