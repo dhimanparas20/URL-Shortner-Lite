@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - MST URL Shortener</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="static/link.png">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-card: #13131a;
+            --bg-card-hover: #1a1a28;
+            --bg-input: #1e1e2e;
+            --border-color: #2d2d44;
+            --border-active: #8b5cf6;
+            --text-primary: #e2e8f0;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --purple-400: #a78bfa;
+            --purple-500: #8b5cf6;
+            --purple-600: #7c3aed;
+            --purple-700: #6d28d9;
+            --purple-900: #4c1d95;
+            --green-400: #4ade80;
+            --green-500: #22c55e;
+            --red-400: #f87171;
+            --red-500: #ef4444;
+            --yellow-400: #facc15;
+            --blue-400: #60a5fa;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        /* ── Top Navbar ── */
+        .admin-nav {
+            background: rgba(19, 19, 26, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.75rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .admin-nav .brand {
+            color: var(--purple-400);
+            font-weight: 700;
+            font-size: 1.15rem;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .admin-nav .brand span {
+            background: linear-gradient(135deg, var(--purple-500), var(--purple-700));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .admin-badge {
+            background: rgba(139, 92, 246, 0.12);
+            color: var(--purple-400);
+            padding: 0.3rem 0.75rem;
+            border-radius: 2rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+        }
+        .btn-logout {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--red-400);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 0.5rem;
+            padding: 0.4rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .btn-logout:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border-color: rgba(239, 68, 68, 0.4);
+        }
+
+        /* ── Main Content ── */
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem 1rem;
+        }
+
+        /* ── Stats Cards ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 1.25rem;
+            transition: all 0.2s;
+        }
+        .stat-card:hover {
+            border-color: rgba(139, 92, 246, 0.2);
+            transform: translateY(-2px);
+        }
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            margin-bottom: 0.75rem;
+        }
+        .stat-icon.purple { background: rgba(139, 92, 246, 0.12); }
+        .stat-icon.green  { background: rgba(34, 197, 94, 0.12); }
+        .stat-icon.red    { background: rgba(239, 68, 68, 0.12); }
+        .stat-icon.blue   { background: rgba(96, 165, 250, 0.12); }
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.25rem;
+        }
+        .stat-value {
+            color: var(--text-primary);
+            font-size: 1.75rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        /* ── Toolbar (search + filters) ── */
+        .toolbar {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            align-items: center;
+        }
+        .search-box {
+            flex: 1;
+            min-width: 220px;
+            position: relative;
+        }
+        .search-box input {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 0.6rem;
+            padding: 0.55rem 1rem 0.55rem 2.5rem;
+            font-size: 0.9rem;
+            transition: border-color 0.2s;
+        }
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--purple-500);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+        .search-box input::placeholder { color: var(--text-muted); }
+        .search-box .search-icon {
+            position: absolute;
+            left: 0.85rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            pointer-events: none;
+        }
+        .filter-group {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        .filter-btn {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            border-radius: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.82rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-btn:hover {
+            border-color: var(--purple-500);
+            color: var(--purple-400);
+        }
+        .filter-btn.active {
+            background: rgba(139, 92, 246, 0.15);
+            border-color: var(--purple-500);
+            color: var(--purple-400);
+        }
+        .sort-select {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.82rem;
+            cursor: pointer;
+        }
+        .sort-select:focus {
+            outline: none;
+            border-color: var(--purple-500);
+        }
+        .sort-select option {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+        .entries-info {
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            margin-left: auto;
+            white-space: nowrap;
+        }
+
+        /* ── Table ── */
+        .table-wrapper {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+        .table-responsive {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+        thead th {
+            background: rgba(30, 30, 46, 0.6);
+            color: var(--purple-400);
+            font-weight: 600;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+            transition: color 0.2s;
+        }
+        thead th:hover {
+            color: var(--purple-500);
+        }
+        thead th .sort-arrow {
+            margin-left: 0.3rem;
+            font-size: 0.7rem;
+            opacity: 0.4;
+        }
+        thead th.sorted .sort-arrow {
+            opacity: 1;
+        }
+        tbody tr {
+            border-bottom: 1px solid rgba(45, 45, 68, 0.4);
+            transition: background 0.15s;
+        }
+        tbody tr:hover {
+            background: var(--bg-card-hover);
+        }
+        tbody tr:last-child {
+            border-bottom: none;
+        }
+        tbody td {
+            padding: 0.85rem 1rem;
+            vertical-align: middle;
+            color: var(--text-secondary);
+        }
+        .cell-short-url {
+            color: var(--purple-400);
+            font-weight: 600;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.85rem;
+        }
+        .cell-long-url {
+            max-width: 280px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: var(--text-primary);
+        }
+        .cell-clicks {
+            font-weight: 600;
+            color: var(--blue-400);
+        }
+        .cell-date {
+            font-size: 0.82rem;
+            white-space: nowrap;
+        }
+        .cell-ip {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        .badge-active {
+            background: rgba(34, 197, 94, 0.12);
+            color: var(--green-400);
+            padding: 0.25rem 0.6rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-expired {
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--red-400);
+            padding: 0.25rem 0.6rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-limited {
+            background: rgba(250, 204, 21, 0.12);
+            color: var(--yellow-400);
+            padding: 0.25rem 0.6rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 0.4rem;
+            border: 1px solid var(--border-color);
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+        }
+        .btn-action.visit {
+            border-color: rgba(96, 165, 250, 0.25);
+            color: var(--blue-400);
+        }
+        .btn-action.visit:hover {
+            background: rgba(96, 165, 250, 0.12);
+            border-color: var(--blue-400);
+        }
+        .btn-action.delete {
+            border-color: rgba(239, 68, 68, 0.25);
+            color: var(--red-400);
+        }
+        .btn-action.delete:hover {
+            background: rgba(239, 68, 68, 0.12);
+            border-color: var(--red-400);
+        }
+        .actions-cell {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        /* ── Pagination ── */
+        .pagination-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.25rem;
+            border-top: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+        .page-btn {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            border-radius: 0.4rem;
+            padding: 0.4rem 0.75rem;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 36px;
+            text-align: center;
+        }
+        .page-btn:hover:not(:disabled):not(.active) {
+            border-color: var(--purple-500);
+            color: var(--purple-400);
+        }
+        .page-btn.active {
+            background: rgba(139, 92, 246, 0.15);
+            border-color: var(--purple-500);
+            color: var(--purple-400);
+            font-weight: 600;
+        }
+        .page-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+        .page-info {
+            color: var(--text-muted);
+            font-size: 0.82rem;
+        }
+
+        /* ── Empty State ── */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+        }
+        .empty-state .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.4;
+        }
+        .empty-state p {
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        /* ── Modal ── */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            transform: scale(0.95);
+            transition: transform 0.2s;
+        }
+        .modal-overlay.show .modal-box {
+            transform: scale(1);
+        }
+        .modal-box h3 {
+            color: var(--red-400);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .modal-box p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        .modal-box .short-url-display {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 0.5rem 1rem;
+            margin: 1rem 0;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            color: var(--purple-400);
+            font-size: 0.9rem;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.25rem;
+        }
+        .modal-actions button {
+            flex: 1;
+            padding: 0.6rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-cancel {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color) !important;
+            color: var(--text-secondary);
+        }
+        .btn-cancel:hover {
+            background: var(--bg-card-hover);
+        }
+        .btn-confirm-delete {
+            background: var(--red-500);
+            color: #fff;
+        }
+        .btn-confirm-delete:hover {
+            background: #dc2626;
+        }
+        .btn-delete-expired {
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+            color: #fff;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.5rem 1.1rem;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .btn-delete-expired:hover {
+            background: linear-gradient(135deg, #dc2626, #991b1b);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+        }
+        .btn-delete-expired:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .btn-delete-expired .spin {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        /* ── Toast ── */
+        .toast-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .toast-msg {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.6rem;
+            padding: 0.75rem 1.25rem;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+        }
+        .toast-msg.success { border-left: 3px solid var(--green-500); }
+        .toast-msg.error   { border-left: 3px solid var(--red-500); }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to   { transform: translateX(0);    opacity: 1; }
+        }
+        @keyframes fadeOut {
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+
+        /* ── Loading ── */
+        .loading-spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--border-color);
+            border-top-color: var(--purple-500);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Responsive ── */
+        @media (max-width: 1024px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .stats-grid { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+            .toolbar { flex-direction: column; }
+            .search-box { min-width: 100%; }
+            .filter-group { width: 100%; justify-content: flex-start; overflow-x: auto; }
+            .entries-info { margin-left: 0; }
+            .pagination-bar { justify-content: center; }
+            .cell-long-url { max-width: 160px; }
+            .admin-badge { display: none; }
+        }
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .main-content { padding: 1rem 0.5rem; }
+            .stat-card { padding: 1rem; }
+            .stat-value { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── Navbar ── -->
+<nav class="admin-nav">
+    <div class="main-content d-flex align-items-center justify-content-between" style="padding:0;">
+        <a href="/" class="brand">&#128279; <span>MST Admin</span></a>
+        <div class="nav-right">
+            <span class="admin-badge">Administrator</span>
+            <a href="/admin/logout" class="btn-logout">&#10140; Logout</a>
+        </div>
+    </div>
+</nav>
+
+<!-- ── Main ── -->
+<div class="main-content">
+
+    <!-- Stats -->
+    <div class="stats-grid" id="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon purple">&#128279;</div>
+            <div class="stat-label">Total URLs</div>
+            <div class="stat-value" id="stat-total">-</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon blue">&#128065;</div>
+            <div class="stat-label">Total Clicks</div>
+            <div class="stat-value" id="stat-clicks">-</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green">&#9989;</div>
+            <div class="stat-label">Active</div>
+            <div class="stat-value" id="stat-active">-</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon red">&#10060;</div>
+            <div class="stat-label">Expired / Limited</div>
+            <div class="stat-value" id="stat-expired">-</div>
+        </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <div class="search-box">
+            <span class="search-icon">&#128269;</span>
+            <input type="text" id="search-input" placeholder="Search by short URL, long URL, or IP...">
+        </div>
+        <div class="filter-group">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="active">Active</button>
+            <button class="filter-btn" data-filter="expired">Expired</button>
+        </div>
+        <button class="btn-delete-expired" id="delete-expired-btn" title="Delete all expired and limit-hit URLs">
+            &#128465; Delete All Expired
+        </button>
+        <select class="sort-select" id="sort-select">
+            <option value="created_at-desc">Newest First</option>
+            <option value="created_at-asc">Oldest First</option>
+            <option value="clicks-desc">Most Clicks</option>
+            <option value="clicks-asc">Least Clicks</option>
+            <option value="short_url-asc">Short URL A-Z</option>
+            <option value="short_url-desc">Short URL Z-A</option>
+        </select>
+        <span class="entries-info" id="entries-info">0 URLs</span>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrapper">
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Short URL</th>
+                        <th>Long URL</th>
+                        <th>Clicks</th>
+                        <th>Created At (IST)</th>
+                        <th>Expires At (IST)</th>
+                        <th>Max Views</th>
+                        <th>IP Address</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="urls-tbody">
+                    <tr><td colspan="9">
+                        <div class="empty-state">
+                            <div class="empty-icon">&#128269;</div>
+                            <p>Loading URLs...</p>
+                        </div>
+                    </td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="pagination-bar" id="pagination-bar"></div>
+    </div>
+</div>
+
+<!-- ── Delete Confirmation Modal ── -->
+<div class="modal-overlay" id="delete-modal">
+    <div class="modal-box">
+        <h3>Delete Short URL</h3>
+        <p>Are you sure you want to permanently delete this short URL?</p>
+        <div class="short-url-display" id="modal-short-url"></div>
+        <p style="font-size:0.8rem;color:var(--text-muted);margin:0;">This action cannot be undone.</p>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+            <button class="btn-confirm-delete" id="confirm-delete-btn">Delete</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Bulk Delete Expired Modal ── -->
+<div class="modal-overlay" id="bulk-delete-modal">
+    <div class="modal-box">
+        <h3>Delete All Expired</h3>
+        <p>This will permanently remove all expired URLs and URLs that have reached their view limit.</p>
+        <div id="bulk-delete-count" style="background:var(--bg-input);border:1px solid var(--border-color);border-radius:0.5rem;padding:0.75rem 1rem;margin:1rem 0;font-size:0.9rem;color:var(--text-secondary);">Calculating...</div>
+        <p style="font-size:0.8rem;color:var(--text-muted);margin:0;">This action cannot be undone.</p>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeBulkModal()">Cancel</button>
+            <button class="btn-confirm-delete" id="confirm-bulk-delete-btn">Delete All</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Toast Container ── -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+(function () {
+    // ── State ──
+    let allUrls = [];
+    let filteredUrls = [];
+    let currentPage = 1;
+    const perPage = 10;
+    let currentFilter = 'all';
+    let currentSort = 'created_at-desc';
+    let searchQuery = '';
+    let deleteTarget = null;
+
+    const tbody = document.getElementById('urls-tbody');
+    const paginationBar = document.getElementById('pagination-bar');
+    const searchInput = document.getElementById('search-input');
+    const sortSelect = document.getElementById('sort-select');
+    const entriesInfo = document.getElementById('entries-info');
+    const deleteModal = document.getElementById('delete-modal');
+    const modalShortUrl = document.getElementById('modal-short-url');
+    const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+
+    // ── IST Conversion ──
+    function toIST(timestamp) {
+        if (!timestamp || timestamp === 0) return '<span style="color:var(--text-muted)">-</span>';
+        const d = new Date(timestamp * 1000);
+        return d.toLocaleString('en-IN', {
+            timeZone: 'Asia/Kolkata',
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true
+        });
+    }
+
+    // ── Status Badge ──
+    function getStatusBadge(url) {
+        const now = Date.now() / 1000;
+        if (url.expires_at && now > url.expires_at) {
+            return '<span class="badge-expired">Expired</span>';
+        }
+        if (url.max_views && url.clicks >= url.max_views) {
+            return '<span class="badge-limited">Limit Hit</span>';
+        }
+        if (url.max_views) {
+            return `<span class="badge-limited">${url.clicks}/${url.max_views}</span>`;
+        }
+        return '<span class="badge-active">Active</span>';
+    }
+
+    // ── Classify URL ──
+    function classifyUrl(url) {
+        const now = Date.now() / 1000;
+        if (url.expires_at && now > url.expires_at) return 'expired';
+        if (url.max_views && url.clicks >= url.max_views) return 'expired';
+        return 'active';
+    }
+
+    // ── Truncate URL ──
+    function truncateUrl(url, max) {
+        max = max || 50;
+        if (!url) return '';
+        if (url.length <= max) return url;
+        return url.substring(0, max) + '...';
+    }
+
+    // ── Escape HTML ──
+    function esc(s) {
+        if (!s) return '';
+        const div = document.createElement('div');
+        div.appendChild(document.createTextNode(s));
+        return div.innerHTML;
+    }
+
+    // ── Fetch URLs ──
+    async function loadUrls() {
+        try {
+            const res = await fetch('/api/admin/urls');
+            if (res.status === 401 || res.status === 302) {
+                window.location.href = '/admin/login';
+                return;
+            }
+            allUrls = await res.json();
+            applyFilters();
+        } catch (e) {
+            tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><p>Failed to load URLs.</p></div></td></tr>';
+        }
+    }
+
+    // ── Apply Filters / Sort / Search ──
+    function applyFilters() {
+        // Filter
+        let list = allUrls;
+        if (currentFilter !== 'all') {
+            list = list.filter(u => classifyUrl(u) === currentFilter);
+        }
+
+        // Search
+        if (searchQuery) {
+            const q = searchQuery.toLowerCase();
+            list = list.filter(u =>
+                (u.short_url || '').toLowerCase().includes(q) ||
+                (u.long_url || '').toLowerCase().includes(q) ||
+                (u.ip_address || '').toLowerCase().includes(q)
+            );
+        }
+
+        // Sort
+        const [field, dir] = currentSort.split('-');
+        list.sort((a, b) => {
+            let va = a[field] ?? 0;
+            let vb = b[field] ?? 0;
+            if (field === 'short_url') {
+                va = (va || '').toLowerCase();
+                vb = (vb || '').toLowerCase();
+                return dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+            }
+            return dir === 'asc' ? va - vb : vb - va;
+        });
+
+        filteredUrls = list;
+        currentPage = 1;
+        render();
+    }
+
+    // ── Render ──
+    function render() {
+        updateStats();
+        renderTable();
+        renderPagination();
+    }
+
+    // ── Stats ──
+    function updateStats() {
+        const now = Date.now() / 1000;
+        document.getElementById('stat-total').textContent = allUrls.length;
+        document.getElementById('stat-clicks').textContent = allUrls.reduce((s, u) => s + (u.clicks || 0), 0);
+        document.getElementById('stat-active').textContent = allUrls.filter(u => classifyUrl(u) === 'active').length;
+        document.getElementById('stat-expired').textContent = allUrls.filter(u => classifyUrl(u) === 'expired').length;
+    }
+
+    // ── Table ──
+    function renderTable() {
+        const start = (currentPage - 1) * perPage;
+        const page = filteredUrls.slice(start, start + perPage);
+
+        entriesInfo.textContent = `${filteredUrls.length} URL${filteredUrls.length !== 1 ? 's' : ''}`;
+
+        if (page.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="9">
+                <div class="empty-state">
+                    <div class="empty-icon">&#128269;</div>
+                    <p>${searchQuery || currentFilter !== 'all' ? 'No URLs match your search or filter.' : 'No URLs have been created yet.'}</p>
+                </div>
+            </td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = page.map(u => `
+            <tr>
+                <td class="cell-short-url">${esc(u.short_url)}</td>
+                <td class="cell-long-url" title="${esc(u.long_url)}">${esc(truncateUrl(u.long_url, 45))}</td>
+                <td class="cell-clicks">${u.clicks || 0}</td>
+                <td class="cell-date">${toIST(u.created_at)}</td>
+                <td class="cell-date">${toIST(u.expires_at)}</td>
+                <td>${u.max_views != null ? u.max_views : '<span style="color:var(--text-muted)">&infin;</span>'}</td>
+                <td class="cell-ip">${esc(u.ip_address) || '<span style="color:var(--text-muted)">-</span>'}</td>
+                <td>${getStatusBadge(u)}</td>
+                <td>
+                    <div class="actions-cell">
+                        <a href="/${esc(u.short_url)}" target="_blank" class="btn-action visit" title="Visit URL">&#10138;</a>
+                        <button class="btn-action delete" title="Delete" data-url="${esc(u.short_url)}">&#128465;</button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+
+        // Attach delete handlers
+        tbody.querySelectorAll('.btn-action.delete').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const url = this.getAttribute('data-url');
+                openDeleteModal(url);
+            });
+        });
+    }
+
+    // ── Pagination ──
+    function renderPagination() {
+        const totalPages = Math.ceil(filteredUrls.length / perPage);
+        if (totalPages <= 1) {
+            paginationBar.innerHTML = '';
+            return;
+        }
+
+        let html = `<span class="page-info">Page ${currentPage} of ${totalPages}</span><div style="display:flex;gap:0.3rem;flex-wrap:wrap;">`;
+
+        html += `<button class="page-btn" data-page="prev" ${currentPage === 1 ? 'disabled' : ''}>&laquo;</button>`;
+
+        const maxVisible = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+        if (endPage - startPage + 1 < maxVisible) {
+            startPage = Math.max(1, endPage - maxVisible + 1);
+        }
+
+        if (startPage > 1) {
+            html += `<button class="page-btn" data-page="1">1</button>`;
+            if (startPage > 2) html += `<button class="page-btn" disabled>...</button>`;
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
+        }
+
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) html += `<button class="page-btn" disabled>...</button>`;
+            html += `<button class="page-btn" data-page="${totalPages}">${totalPages}</button>`;
+        }
+
+        html += `<button class="page-btn" data-page="next" ${currentPage === totalPages ? 'disabled' : ''}>&raquo;</button>`;
+        html += '</div>';
+
+        paginationBar.innerHTML = html;
+
+        paginationBar.querySelectorAll('.page-btn:not([disabled])').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const val = this.getAttribute('data-page');
+                const totalPages = Math.ceil(filteredUrls.length / perPage);
+                if (val === 'prev') currentPage = Math.max(1, currentPage - 1);
+                else if (val === 'next') currentPage = Math.min(totalPages, currentPage + 1);
+                else currentPage = parseInt(val);
+                renderTable();
+                renderPagination();
+            });
+        });
+    }
+
+    // ── Delete Modal ──
+    function openDeleteModal(shortUrl) {
+        deleteTarget = shortUrl;
+        modalShortUrl.textContent = shortUrl;
+        deleteModal.classList.add('show');
+    }
+
+    window.closeModal = function () {
+        deleteModal.classList.remove('show');
+        deleteTarget = null;
+    };
+
+    confirmDeleteBtn.addEventListener('click', async function () {
+        if (!deleteTarget) return;
+        this.disabled = true;
+        this.textContent = 'Deleting...';
+        try {
+            const res = await fetch(`/api/admin/urls/${encodeURIComponent(deleteTarget)}`, { method: 'DELETE' });
+            if (res.ok) {
+                showToast(`"${deleteTarget}" deleted successfully`, 'success');
+                allUrls = allUrls.filter(u => u.short_url !== deleteTarget);
+                applyFilters();
+            } else {
+                showToast('Failed to delete URL', 'error');
+            }
+        } catch (e) {
+            showToast('Network error', 'error');
+        }
+        this.disabled = false;
+        this.textContent = 'Delete';
+        closeModal();
+    });
+
+    deleteModal.addEventListener('click', function (e) {
+        if (e.target === deleteModal) closeModal();
+    });
+
+    // ── Bulk Delete Expired ──
+    const bulkDeleteModal = document.getElementById('bulk-delete-modal');
+    const bulkDeleteCount = document.getElementById('bulk-delete-count');
+    const confirmBulkDeleteBtn = document.getElementById('confirm-bulk-delete-btn');
+    const deleteExpiredBtn = document.getElementById('delete-expired-btn');
+
+    function getExpiredCount() {
+        const now = Date.now() / 1000;
+        return allUrls.filter(u => {
+            if (u.expires_at && now > u.expires_at) return true;
+            if (u.max_views && u.clicks >= u.max_views) return true;
+            return false;
+        }).length;
+    }
+
+    deleteExpiredBtn.addEventListener('click', function () {
+        const count = getExpiredCount();
+        if (count === 0) {
+            showToast('No expired URLs to delete', 'success');
+            return;
+        }
+        bulkDeleteCount.innerHTML = `<span style="color:var(--red-400);font-weight:700;font-size:1.2rem;">${count}</span> expired URL${count !== 1 ? 's' : ''} will be permanently deleted.`;
+        bulkDeleteModal.classList.add('show');
+    });
+
+    window.closeBulkModal = function () {
+        bulkDeleteModal.classList.remove('show');
+    };
+
+    bulkDeleteModal.addEventListener('click', function (e) {
+        if (e.target === bulkDeleteModal) closeBulkModal();
+    });
+
+    confirmBulkDeleteBtn.addEventListener('click', async function () {
+        this.disabled = true;
+        this.innerHTML = '<span class="spin"></span> Deleting...';
+        try {
+            const res = await fetch('/api/admin/urls/delete-expired', { method: 'DELETE' });
+            if (res.ok) {
+                const data = await res.json();
+                showToast(`${data.deleted} expired URL${data.deleted !== 1 ? 's' : ''} deleted`, 'success');
+                await loadUrls();
+            } else {
+                showToast('Failed to delete expired URLs', 'error');
+            }
+        } catch (e) {
+            showToast('Network error', 'error');
+        }
+        this.disabled = false;
+        this.innerHTML = 'Delete All';
+        closeBulkModal();
+    });
+
+    // ── Toast ──
+    function showToast(message, type) {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast-msg ${type}`;
+        toast.textContent = message;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    // ── Events ──
+    searchInput.addEventListener('input', function () {
+        searchQuery = this.value.trim();
+        applyFilters();
+    });
+
+    sortSelect.addEventListener('change', function () {
+        currentSort = this.value;
+        applyFilters();
+    });
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentFilter = this.getAttribute('data-filter');
+            applyFilters();
+        });
+    });
+
+    // ── Init ──
+    loadUrls();
+})();
+</script>
+</body>
+</html>

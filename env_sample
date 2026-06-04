@@ -1,2 +1,5 @@
 MONGO_URI=mongodb://localhost:27017/url_shortner
 USE_JSON_FILE=false
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=changeme
+FLASK_DEBUG=true
