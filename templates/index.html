@@ -14,13 +14,14 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
         .mst-card {
             background: #18181b;
             border-radius: 1rem;
             box-shadow: 0 4px 32px 0 rgba(80, 0, 120, 0.15);
             padding: 2rem 2rem 1.5rem 2rem;
-            max-width: 420px;
+            max-width: 440px;
             margin: auto;
         }
         .mst-title {
@@ -28,9 +29,7 @@
             font-weight: 700;
             letter-spacing: 1px;
         }
-        .form-label {
-            color: #c4b5fd;
-        }
+        .form-label { color: #c4b5fd; }
         .form-control {
             background: #232136;
             border: 1px solid #8b5cf6;
@@ -47,7 +46,7 @@
             color: #fff;
             font-weight: 600;
             border: none;
-            transition: background 0.2s;
+            transition: all 0.2s;
         }
         .btn-purple:hover, .btn-purple:focus {
             background: linear-gradient(90deg, #7c3aed 0%, #5b21b6 100%);
@@ -63,9 +62,7 @@
             background: #4b5563;
             color: #fff;
         }
-        .short-url-label {
-            color: #c4b5fd;
-        }
+        .short-url-label { color: #c4b5fd; }
         .short-url-link {
             color: #a78bfa;
             word-break: break-all;
@@ -82,55 +79,163 @@
             padding: 0.5rem;
             border-radius: 0.5rem;
         }
-        .stat-label {
-            color: #c4b5fd;
-            font-size: 0.95rem;
+        .stat-label { color: #c4b5fd; font-size: 0.95rem; }
+        .btn-copy {
+            background: #232136;
+            border: 1px solid #8b5cf6;
+            color: #a78bfa;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.3rem 0.75rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
         }
+        .btn-copy:hover {
+            background: #8b5cf6;
+            color: #fff;
+        }
+        .btn-copy.copied {
+            background: #22c55e;
+            border-color: #22c55e;
+            color: #fff;
+        }
+        .error-msg {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            color: #fca5a5;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        .error-msg.visible { display: block; }
+        .success-msg {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            color: #4ade80;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        .success-msg.visible { display: block; }
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-right: 0.4rem;
+            vertical-align: middle;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .preview-box {
+            background: #232136;
+            border: 1px solid #2d2d44;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            margin-top: 0.5rem;
+            font-size: 0.82rem;
+            color: #9ca3af;
+            display: none;
+        }
+        .preview-box.visible { display: block; }
+        .preview-box .preview-title {
+            color: #a78bfa;
+            font-weight: 600;
+        }
+        .preview-box .preview-url {
+            color: #6b7280;
+            font-size: 0.78rem;
+            word-break: break-all;
+        }
+        .collapsible-toggle {
+            color: #8b5cf6;
+            font-size: 0.82rem;
+            cursor: pointer;
+            border: none;
+            background: none;
+            padding: 0;
+            font-weight: 500;
+        }
+        .collapsible-toggle:hover { color: #a78bfa; }
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .collapsible-content.open { max-height: 200px; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="mst-card shadow-lg">
             <h1 class="text-center mb-4 mst-title display-6">MST URL Shortener</h1>
+
             <!-- Shorten URL Form -->
             <form id="url-form" autocomplete="off">
                 <div class="mb-3">
                     <label for="long-url" class="form-label">Enter URL to shorten:</label>
                     <input type="url" id="long-url" class="form-control" required placeholder="https://example.com">
+                    <div class="preview-box" id="url-preview">
+                        <span class="preview-title" id="preview-title"></span>
+                        <div class="preview-url" id="preview-final-url"></div>
+                    </div>
                 </div>
-                 <div class="mb-3">
+                <div class="mb-3">
                     <label for="custom-keyword" class="form-label">Custom Keyword (optional):</label>
                     <input type="text" id="custom-keyword" class="form-control" placeholder="e.g. my-link">
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Auto-Delete After (optional):</label>
-                    <div class="d-flex gap-2">
-                        <input type="number" id="expiry-value" class="form-control" placeholder="e.g. 1" min="1" style="width:40%">
-                        <select id="expiry-unit" class="form-control" style="width:60%;background:#232136;border:1px solid #8b5cf6;color:#fff;">
-                            <option value="">Never</option>
-                            <option value="seconds">Seconds</option>
-                            <option value="minutes">Minutes</option>
-                            <option value="hours">Hours</option>
-                            <option value="days">Days</option>
-                            <option value="weeks">Weeks</option>
-                            <option value="months">Months</option>
-                        </select>
+
+                <button type="button" class="collapsible-toggle mb-2" id="advanced-toggle">&#9662; Advanced Options</button>
+                <div class="collapsible-content" id="advanced-options">
+                    <div class="mb-3">
+                        <label class="form-label">Auto-Delete After (optional):</label>
+                        <div class="d-flex gap-2">
+                            <input type="number" id="expiry-value" class="form-control" placeholder="e.g. 1" min="1" style="width:40%">
+                            <select id="expiry-unit" class="form-control" style="width:60%;background:#232136;border:1px solid #8b5cf6;color:#fff;">
+                                <option value="">Never</option>
+                                <option value="seconds">Seconds</option>
+                                <option value="minutes">Minutes</option>
+                                <option value="hours">Hours</option>
+                                <option value="days">Days</option>
+                                <option value="weeks">Weeks</option>
+                                <option value="months">Months</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="max-views" class="form-label">Max Views (optional):</label>
+                        <input type="number" id="max-views" class="form-control" placeholder="e.g. 1 for one-time view" min="1">
+                    </div>
+                    <div class="mb-3">
+                        <label for="url-password" class="form-label">Password Protect (optional):</label>
+                        <input type="text" id="url-password" class="form-control" placeholder="Leave empty for no password">
                     </div>
                 </div>
-                <div class="mb-4">
-                    <label for="max-views" class="form-label">Max Views (optional):</label>
-                    <input type="number" id="max-views" class="form-control" placeholder="e.g. 1 for one-time view" min="1">
-                </div>
-                <div class="d-flex gap-3">
-                    <button type="submit" class="btn btn-purple flex-fill">Shorten URL</button>
+
+                <div id="form-error" class="error-msg"></div>
+
+                <div class="d-flex gap-3 mt-3">
+                    <button type="submit" class="btn btn-purple flex-fill" id="submit-btn">Shorten URL</button>
                     <button type="reset" id="reset-btn" class="btn btn-gray flex-fill">Reset</button>
                 </div>
             </form>
+
             <!-- Shorten Result -->
-            <div id="result" class="mt-5 text-center d-none">
+            <div id="result" class="mt-4 text-center d-none">
                 <p class="short-url-label fw-semibold mb-2">Shortened URL:</p>
-                <a id="short-url" href="#" target="_blank" class="short-url-link fs-5"></a>
-                <div class="mt-3">
+                <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
+                    <a id="short-url" href="#" target="_blank" class="short-url-link fs-5"></a>
+                    <button class="btn-copy" id="copy-btn" title="Copy to clipboard">&#128203; Copy</button>
+                </div>
+                <div id="password-notice" class="d-none" style="font-size:0.8rem;color:#facc15;margin-bottom:0.5rem;">&#128274; Password protected</div>
+                <div class="mt-2">
                     <span class="stat-label">Clicks: <span id="click-count">0</span></span>
                 </div>
                 <div id="qr-section" class="mt-3">
@@ -140,6 +245,7 @@
                     </div>
                 </div>
             </div>
+
             <!-- Reverse Lookup -->
             <hr class="my-4" />
             <div>
@@ -149,11 +255,13 @@
                         <label for="short-keyword" class="form-label">Enter Keyword or URL</label>
                         <input type="text" id="short-keyword" class="form-control" required placeholder="e.g. my-link">
                     </div>
-                    <button type="submit" class="btn btn-purple w-100">Get Original URL</button>
+                    <div id="unshorten-error" class="error-msg"></div>
+                    <button type="submit" class="btn btn-purple w-100" id="unshorten-btn">Get Original URL</button>
                 </form>
                 <div id="unshorten-result" class="mt-3 text-center d-none">
                     <p class="short-url-label fw-semibold mb-2">Original URL:</p>
                     <a id="original-url" href="#" target="_blank" class="short-url-link fs-6"></a>
+                    <div id="unshorten-password-notice" class="d-none" style="font-size:0.8rem;color:#facc15;margin-top:0.25rem;">&#128274; Password protected</div>
                     <div class="mt-2">
                         <span class="stat-label">Clicks: <span id="unshorten-click-count">0</span></span>
                     </div>
@@ -161,8 +269,9 @@
             </div>
         </div>
     </div>
+
     <script>
-        // Shorten URL logic
+    (function () {
         const form = document.getElementById('url-form');
         const longUrlInput = document.getElementById('long-url');
         const customKeywordInput = document.getElementById('custom-keyword');
@@ -172,20 +281,84 @@
         const clickCount = document.getElementById('click-count');
         const qrImg = document.getElementById('qr-img');
         const downloadQr = document.getElementById('download-qr');
-        const unshortenClickCount = document.getElementById('unshorten-click-count');
-
-
+        const submitBtn = document.getElementById('submit-btn');
+        const formError = document.getElementById('form-error');
+        const copyBtn = document.getElementById('copy-btn');
+        const passwordNotice = document.getElementById('password-notice');
         const expiryValueInput = document.getElementById('expiry-value');
         const expiryUnitInput = document.getElementById('expiry-unit');
         const maxViewsInput = document.getElementById('max-views');
+        const urlPasswordInput = document.getElementById('url-password');
+        const advancedToggle = document.getElementById('advanced-toggle');
+        const advancedOptions = document.getElementById('advanced-options');
+        const previewBox = document.getElementById('url-preview');
+        const previewTitle = document.getElementById('preview-title');
+        const previewFinalUrl = document.getElementById('preview-final-url');
+
+        let previewTimeout = null;
+
+        function showError(msg) {
+            formError.textContent = msg;
+            formError.classList.add('visible');
+        }
+        function hideError() {
+            formError.classList.remove('visible');
+        }
+
+        function setLoading(loading) {
+            if (loading) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner"></span> Shortening...';
+            } else {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Shorten URL';
+            }
+        }
+
+        advancedToggle.addEventListener('click', function () {
+            advancedOptions.classList.toggle('open');
+            this.innerHTML = advancedOptions.classList.contains('open') ? '&#9652; Hide Options' : '&#9662; Advanced Options';
+        });
+
+        longUrlInput.addEventListener('input', function () {
+            clearTimeout(previewTimeout);
+            const url = this.value.trim();
+            if (url && url.startsWith('http')) {
+                previewTimeout = setTimeout(async () => {
+                    try {
+                        const res = await fetch('/api/preview?url=' + encodeURIComponent(url));
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data.title) {
+                                previewTitle.textContent = data.title;
+                                previewFinalUrl.textContent = data.final_url || url;
+                                previewBox.classList.add('visible');
+                            } else {
+                                previewBox.classList.remove('visible');
+                            }
+                        }
+                    } catch (e) {
+                        previewBox.classList.remove('visible');
+                    }
+                }, 800);
+            } else {
+                previewBox.classList.remove('visible');
+            }
+        });
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const longUrl = longUrlInput.value;
+            hideError();
+            const longUrl = longUrlInput.value.trim();
+            if (!longUrl) { showError('Please enter a URL'); return; }
+
             const customKeyword = customKeywordInput.value.trim() || null;
             const expiryValue = expiryValueInput.value || null;
             const expiryUnit = expiryUnitInput.value || null;
             const maxViews = maxViewsInput.value || null;
+            const password = urlPasswordInput.value.trim() || null;
+
+            setLoading(true);
             try {
                 const response = await fetch('/shorten', {
                     method: 'POST',
@@ -196,30 +369,29 @@
                         expiry_value: expiryValue,
                         expiry_unit: expiryUnit,
                         max_views: maxViews,
+                        password: password,
                     }),
                 });
+                const data = await response.json();
                 if (response.ok) {
-                    const data = await response.json();
-                    const shortUrl = `${window.location.origin}/${data.short_url}`;
+                    const shortUrl = window.location.origin + '/' + data.short_url;
                     shortUrlLink.href = shortUrl;
                     shortUrlLink.textContent = shortUrl;
                     resultDiv.classList.remove('d-none');
-                    // Fetch click stats
-                    fetch(`/stats/${data.short_url}`)
-                        .then(res => res.json())
-                        .then(stat => clickCount.textContent = stat.clicks || 0);
-                    // Show QR code
-                    const qrUrl = `/qr/${data.short_url}`;
+                    passwordNotice.classList.toggle('d-none', !data.has_password);
+                    fetch('/stats/' + data.short_url)
+                        .then(r => r.json())
+                        .then(s => clickCount.textContent = s.clicks || 0);
+                    const qrUrl = '/qr/' + data.short_url;
                     qrImg.src = qrUrl;
                     downloadQr.href = qrUrl;
                 } else {
-                    const err = await response.json();
-                    alert(err.error || 'Error shortening URL');
+                    showError(data.error || 'Error shortening URL');
                 }
             } catch (error) {
-                console.error('Error:', error);
-                alert('Error shortening URL');
+                showError('Network error. Please try again.');
             }
+            setLoading(false);
         });
 
         resetBtn.addEventListener('click', (e) => {
@@ -232,18 +404,55 @@
             qrImg.src = '';
             downloadQr.href = '#';
             expiryUnitInput.value = '';
+            hideError();
+            previewBox.classList.remove('visible');
+            passwordNotice.classList.add('d-none');
+            advancedOptions.classList.remove('open');
+            advancedToggle.innerHTML = '&#9662; Advanced Options';
         });
 
-        // Reverse Lookup logic
+        copyBtn.addEventListener('click', function () {
+            const url = shortUrlLink.textContent;
+            if (!url) return;
+            navigator.clipboard.writeText(url).then(() => {
+                copyBtn.innerHTML = '&#10003; Copied!';
+                copyBtn.classList.add('copied');
+                setTimeout(() => {
+                    copyBtn.innerHTML = '&#128203; Copy';
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+            }).catch(() => {
+                const ta = document.createElement('textarea');
+                ta.value = url;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                copyBtn.innerHTML = '&#10003; Copied!';
+                copyBtn.classList.add('copied');
+                setTimeout(() => {
+                    copyBtn.innerHTML = '&#128203; Copy';
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+            });
+        });
+
         const unshortenForm = document.getElementById('unshorten-form');
         const shortKeywordInput = document.getElementById('short-keyword');
         const unshortenResultDiv = document.getElementById('unshorten-result');
         const originalUrlLink = document.getElementById('original-url');
+        const unshortenClickCount = document.getElementById('unshorten-click-count');
+        const unshortenError = document.getElementById('unshorten-error');
+        const unshortenBtn = document.getElementById('unshorten-btn');
+        const unshortenPasswordNotice = document.getElementById('unshorten-password-notice');
 
         unshortenForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const keyword = shortKeywordInput.value.trim();
             if (!keyword) return;
+            unshortenError.classList.remove('visible');
+            unshortenBtn.disabled = true;
+            unshortenBtn.innerHTML = '<span class="spinner"></span> Looking up...';
             try {
                 const response = await fetch('/unshorten', {
                     method: 'POST',
@@ -255,17 +464,23 @@
                     originalUrlLink.href = data.long_url;
                     originalUrlLink.textContent = data.long_url;
                     unshortenClickCount.textContent = data.clicks || 0;
+                    unshortenPasswordNotice.classList.toggle('d-none', !data.has_password);
                     unshortenResultDiv.classList.remove('d-none');
                 } else {
                     const err = await response.json();
-                    alert(err.error || 'Short URL not found');
+                    unshortenError.textContent = err.error || 'Short URL not found';
+                    unshortenError.classList.add('visible');
                     unshortenResultDiv.classList.add('d-none');
                 }
             } catch (error) {
-                console.error('Error:', error);
-                alert('Error looking up URL');
+                unshortenError.textContent = 'Network error';
+                unshortenError.classList.add('visible');
+                unshortenResultDiv.classList.add('d-none');
             }
+            unshortenBtn.disabled = false;
+            unshortenBtn.innerHTML = 'Get Original URL';
         });
+    })();
     </script>
 </body>
 </html>
